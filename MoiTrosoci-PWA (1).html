@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Мои Трошоци">
+<meta name="theme-color" content="#0d0d14">
+<title>Мои Трошоци</title>
+<meta name="description" content="Апликација за следење на лични финансиски трошоци и потсетници">
+<link id="pwaManifest" rel="manifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0d0d14;
+  --bg2:       #13131f;
+  --card:      #1a1a28;
+  --card2:     #20202f;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --text:      #eeeef5;
+  --text2:     #7777a0;
+  --text3:     #44445a;
+  --accent:    #7c6af7;
+  --accent2:   #5b4de0;
+  --green:     #3dd68c;
+  --red:       #f25f5c;
+  --yellow:    #f4c542;
+  --orange:    #f07d3a;
+  --teal:      #38bdf8;
+  --pink:      #f472b6;
+  --r:         16px;
+  --rs:        10px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overscroll-behavior: none;
+}
+
+/* ═══════════════════════════════
+   APP SHELL
+═══════════════════════════════ */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: -webkit-fill-available;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ═══════════════════════════════
+   HEADER
+═══════════════════════════════ */
+.header {
+  padding: 52px 20px 0;
+  background: var(--bg);
+  position: relative;
+  z-index: 10;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--accent); }
+  50% { box-shadow: 0 0 20px var(--accent); }
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.header-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text2);
+}
+
+/* Month balance card */
+.balance-card {
+  background: linear-gradient(135deg, #1e1b3a 0%, #16122c 100%);
+  border: 1px solid rgba(124,106,247,0.25);
+  border-radius: var(--r);
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.balance-card::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(124,106,247,0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.balance-label {
+  font-size: 11px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+.balance-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+
+.balance-amount span { color: var(--accent); font-size: 18px; }
+
+.balance-row {
+  display: flex;
+  gap: 12px;
+}
+
+.bal-item {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--rs);
+  padding: 10px 12px;
+}
+
+.bal-item-label {
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.bal-item-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════
+   TABS
+═══════════════════════════════ */
+.tabs {
+  display: flex;
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 4px;
+  margin: 0 20px 16px;
+  gap: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 9px 8px;
+  border-radius: 9px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.2px;
+}
+
+.tab.active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ═══════════════════════════════
+   CONTENT PANELS
+═══════════════════════════════ */
+.panel { display: none; flex: 1; overflow-y: auto; padding: 0 20px 100px; }
+.panel.active { display: block; }
+
+/* ═══════════════════════════════
+   EXPENSES PANEL
+═══════════════════════════════ */
+.month-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.month-arrow {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.month-arrow:active { background: var(--accent); color: #fff; }
+
+.month-current {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cat-filter-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  scrollbar-width: none;
+}
+.cat-filter-scroll::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.cat-chip.active {
+  border-color: var(--accent);
+  background: rgba(124,106,247,0.15);
+  color: var(--accent);
+}
+
+/* Summary per category */
+.cat-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cat-sum-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left-width: 3px;
+}
+.cat-sum-card:active { transform: scale(0.97); }
+
+.cat-sum-emoji { font-size: 18px; margin-bottom: 4px; }
+.cat-sum-name { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.cat-sum-amt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+.cat-sum-count { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* Expense list */
+.section-head {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text2);
+  margin: 20px 0 10px;
+}
+
+.expense-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.expense-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+
+.expense-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.expense-info { flex: 1; min-width: 0; }
+
+.expense-desc {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expense-meta {
+  font-size: 11px;
+  color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.expense-right { text-align: right; flex-shrink: 0; }
+
+.expense-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.expense-delete {
+  font-size: 14px;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.expense-delete:active { color: var(--red); background: rgba(242,95,92,0.1); }
+
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text2);
+}
+.empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state-text { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+.empty-state-sub { font-size: 13px; line-height: 1.5; }
+
+/* ═══════════════════════════════
+   REMINDERS PANEL
+═══════════════════════════════ */
+.reminder-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reminder-check {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border2);
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+.reminder-check.done {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.reminder-info { flex: 1; min-width: 0; }
+
+.reminder-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.reminder-text.done-text {
+  text-decoration: line-through;
+  color: var(--text2);
+}
+
+.reminder-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.reminder-date-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(124,106,247,0.15);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.reminder-date-tag.overdue {
+  background: rgba(242,95,92,0.15);
+  color: var(--red);
+}
+
+.reminder-date-tag.today {
+  background: rgba(244,197,66,0.15);
+  color: var(--yellow);
+}
+
+.reminder-repeat-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.07);
+  color: var(--text2);
+}
+
+.reminder-delete {
+  font-size: 14px;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+.reminder-delete:active { color: var(--red); }
+
+/* ═══════════════════════════════
+   STATS PANEL
+═══════════════════════════════ */
+.stats-bar-list { margin-top: 8px; }
+
+.stats-bar-item {
+  margin-bottom: 14px;
+}
+
+.stats-bar-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  align-items: center;
+}
+
+.stats-bar-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.stats-bar-amt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.stats-bar-track {
+  height: 6px;
+  background: var(--card2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stats-bar-fill {
+  height: 6px;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stats-mini-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+}
+
+.stats-mini-label {
+  font-size: 11px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.stats-mini-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════
+   FAB
+═══════════════════════════════ */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 50%;
+  transform: translateX(50%);
+  max-width: calc(480px - 40px);
+  width: calc(100% - 40px);
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border: none;
+  border-radius: var(--r);
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 32px rgba(124,106,247,0.45);
+  transition: all 0.2s;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.fab:active { transform: translateX(50%) scale(0.97); }
+
+/* ═══════════════════════════════
+   MODAL
+═══════════════════════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px 40px;
+  width: 100%;
+  max-width: 480px;
+  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  letter-spacing: -0.3px;
+}
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text2);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--rs);
+  padding: 13px 14px;
+  font-size: 15px;
+  font-family: 'Syne', sans-serif;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--accent); }
+
+.form-input::placeholder { color: var(--text3); }
+
+input[type="date"].form-input,
+input[type="time"].form-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color-scheme: dark;
+}
+
+/* Category picker */
+.cat-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.cat-pick-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cat-pick-btn.selected {
+  border-color: var(--accent);
+  background: rgba(124,106,247,0.15);
+}
+
+.cat-pick-btn:active { transform: scale(0.95); }
+
+.cat-pick-emoji { font-size: 20px; margin-bottom: 4px; }
+.cat-pick-name { font-size: 10px; color: var(--text2); font-weight: 600; }
+.cat-pick-btn.selected .cat-pick-name { color: var(--accent); }
+
+/* Repeat picker */
+.repeat-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.repeat-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  padding: 10px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.repeat-btn.selected {
+  border-color: var(--yellow);
+  background: rgba(244,197,66,0.12);
+  color: var(--yellow);
+}
+
+/* Amount input special */
+.amount-wrap {
+  position: relative;
+}
+.amount-wrap .form-input {
+  padding-right: 60px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+}
+.amount-currency {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+  pointer-events: none;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.btn-cancel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  transition: all 0.2s;
+}
+.btn-cancel:active { background: var(--card2); }
+
+.btn-save {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  border-radius: var(--rs);
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(124,106,247,0.35);
+}
+.btn-save:active { transform: scale(0.97); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* Notif banner */
+.notif-banner {
+  background: linear-gradient(135deg, #1e2a1a, #162412);
+  border: 1px solid rgba(61,214,140,0.25);
+  border-radius: var(--rs);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.notif-banner-text { flex: 1; }
+.notif-banner-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.notif-banner-sub   { font-size: 11px; color: var(--text2); line-height: 1.4; }
+.notif-enable-btn {
+  background: var(--green);
+  color: #0d1f12;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Syne', sans-serif;
+  flex-shrink: 0;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  z-index: 999;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <div class="brand-dot"></div>
+        <span class="brand-name">Мои Трошоци</span>
+      </div>
+      <div class="header-date" id="headerDate">—</div>
+    </div>
+
+    <div class="balance-card">
+      <div class="balance-label">Вкупно овој месец</div>
+      <div class="balance-amount"><span>МКД</span> <span id="totalBalance">0,00</span></div>
+      <div class="balance-row">
+        <div class="bal-item">
+          <div class="bal-item-label">Трансакции</div>
+          <div class="bal-item-val" id="totalCount" style="color:var(--teal)">0</div>
+        </div>
+        <div class="bal-item">
+          <div class="bal-item-label">Просек / ден</div>
+          <div class="bal-item-val" id="avgPerDay" style="color:var(--accent)">0</div>
+        </div>
+        <div class="bal-item">
+          <div class="bal-item-label">Потсетници</div>
+          <div class="bal-item-val" id="reminderCount" style="color:var(--yellow)">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('expenses')">💸 Трошоци</div>
+      <div class="tab" onclick="switchTab('reminders')">🔔 Потсетници</div>
+      <div class="tab" onclick="switchTab('stats')">📊 Статистика</div>
+    </div>
+  </div>
+
+  <!-- EXPENSES PANEL -->
+  <div class="panel active" id="panel-expenses">
+    <div style="height:16px"></div>
+
+    <!-- Month nav -->
+    <div class="month-filter">
+      <div class="month-nav">
+        <div class="month-arrow" onclick="changeMonth(-1)">‹</div>
+        <div class="month-current" id="monthLabel">—</div>
+        <div class="month-arrow" onclick="changeMonth(1)">›</div>
+      </div>
+    </div>
+
+    <!-- Category chips -->
+    <div class="cat-filter-scroll" id="catFilterScroll"></div>
+
+    <!-- Category summary cards -->
+    <div class="cat-summary" id="catSummary"></div>
+
+    <!-- Expense list -->
+    <div class="section-head">Трансакции</div>
+    <div id="expenseList"></div>
+  </div>
+
+  <!-- REMINDERS PANEL -->
+  <div class="panel" id="panel-reminders">
+    <div style="height:16px"></div>
+
+    <!-- Notification permission banner -->
+    <div class="notif-banner" id="notifBanner" style="display:none">
+      <div class="notif-banner-text">
+        <div class="notif-banner-title">🔔 Овозможи нотификации</div>
+        <div class="notif-banner-sub">Добивај потсетници на телефонот на зададениот датум</div>
+      </div>
+      <button class="notif-enable-btn" onclick="requestNotifPermission()">Овозможи</button>
+    </div>
+
+    <div class="section-head">Активни</div>
+    <div id="reminderListActive"></div>
+    <div class="section-head" style="margin-top:24px">Завршени</div>
+    <div id="reminderListDone"></div>
+  </div>
+
+  <!-- STATS PANEL -->
+  <div class="panel" id="panel-stats">
+    <div style="height:16px"></div>
+
+    <div class="section-head">Овој месец наспроти минат</div>
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="section-head">По категорија (овој месец)</div>
+    <div class="stats-bar-list" id="statsBars"></div>
+
+    <div class="section-head">Последни 6 месеци</div>
+    <div id="statsMonths"></div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" id="fab" onclick="openModal()">
+    <span>+</span> <span id="fabLabel">Додај трошок</span>
+  </button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Нов трошок</div>
+
+    <!-- EXPENSE FORM -->
+    <div id="expenseForm">
+      <div class="form-group">
+        <label class="form-label">Категорија</label>
+        <div class="cat-picker" id="catPicker"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Опис</label>
+        <input class="form-input" id="expDesc" type="text" placeholder="Каде потрошени...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Сума</label>
+        <div class="amount-wrap">
+          <input class="form-input" id="expAmount" type="number" inputmode="decimal" placeholder="0.00">
+          <div class="amount-currency">МКД</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Датум</label>
+        <input class="form-input" id="expDate" type="date">
+      </div>
+    </div>
+
+    <!-- REMINDER FORM -->
+    <div id="reminderForm" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Потсетник</label>
+        <input class="form-input" id="remText" type="text" placeholder="Плати сметка, купи лек...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Датум</label>
+        <input class="form-input" id="remDate" type="date">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Повторување</label>
+        <div class="repeat-picker">
+          <div class="repeat-btn selected" data-val="none" onclick="selectRepeat(this)">Еднаш</div>
+          <div class="repeat-btn" data-val="weekly" onclick="selectRepeat(this)">Неделно</div>
+          <div class="repeat-btn" data-val="monthly" onclick="selectRepeat(this)">Месечно</div>
+          <div class="repeat-btn" data-val="yearly" onclick="selectRepeat(this)">Годишно</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Откажи</button>
+      <button class="btn-save" onclick="saveEntry()">Зачувај ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const CATS = [
+  { id:'smetki',   name:'Сметки',        emoji:'🏠', color:'#f25f5c' },
+  { id:'hrana',    name:'Храна',          emoji:'🛒', color:'#38bdf8' },
+  { id:'benzin',   name:'Бензин',         emoji:'⛽', color:'#f07d3a' },
+  { id:'kesh',     name:'Кеш',            emoji:'💵', color:'#f4c542' },
+  { id:'laki',     name:'Лаки',           emoji:'🎰', color:'#a78bfa' },
+  { id:'zdravje',  name:'Здравје',        emoji:'💊', color:'#3dd68c' },
+  { id:'naracana', name:'Достава',        emoji:'🍕', color:'#f472b6' },
+  { id:'ostanato', name:'Останато',       emoji:'📦', color:'#64748b' },
+];
+
+const MONTHS_MK = ['Јануари','Февруари','Март','Април','Мај','Јуни',
+                    'Јули','Август','Септември','Октомври','Ноември','Декември'];
+
+let expenses  = JSON.parse(localStorage.getItem('mt_expenses')  || '[]');
+let reminders = JSON.parse(localStorage.getItem('mt_reminders') || '[]');
+
+// Restore dates
+expenses.forEach(e => e.date = new Date(e.date));
+reminders.forEach(r => { if (r.date) r.date = new Date(r.date); });
+
+// View state
+let currentTab    = 'expenses';
+let viewYear      = new Date().getFullYear();
+let viewMonth     = new Date().getMonth(); // 0-based
+let selectedCat   = 'all';
+
+// Modal state
+let modalMode = 'expense'; // 'expense' | 'reminder'
+let selectedCatId = CATS[0].id;
+let selectedRepeat = 'none';
+
+// ═══════════════════════════════════════
+// SAVE
+// ═══════════════════════════════════════
+function saveExpenses()  { localStorage.setItem('mt_expenses',  JSON.stringify(expenses)); }
+function saveReminders() { localStorage.setItem('mt_reminders', JSON.stringify(reminders)); }
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Header date
+  document.getElementById('headerDate').textContent =
+    new Date().toLocaleDateString('mk-MK', { weekday:'short', day:'numeric', month:'short' }).toUpperCase();
+
+  // Set today as default for inputs
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('expDate').value  = today;
+  document.getElementById('remDate').value  = today;
+
+  buildCatPicker();
+  buildCatChips();
+  render();
+  checkReminders();
+});
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['expenses','reminders','stats'][i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+
+  const fabLabel = document.getElementById('fabLabel');
+  if (tab === 'expenses')  fabLabel.textContent = 'Додај трошок';
+  if (tab === 'reminders') fabLabel.textContent = 'Нов потсетник';
+  if (tab === 'stats')     { document.getElementById('fab').style.display = 'none'; renderStats(); return; }
+  document.getElementById('fab').style.display = 'flex';
+
+  if (tab === 'reminders') { renderReminders(); checkAndShowNotifBanner(); }
+}
+
+// ═══════════════════════════════════════
+// MONTH NAV
+// ═══════════════════════════════════════
+function changeMonth(dir) {
+  viewMonth += dir;
+  if (viewMonth > 11) { viewMonth = 0;  viewYear++; }
+  if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+  render();
+}
+
+// ═══════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════
+function buildCatChips() {
+  const el = document.getElementById('catFilterScroll');
+  el.innerHTML = `<div class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">Сите</div>` +
+    CATS.map(c => `<div class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)">${c.emoji} ${c.name}</div>`).join('');
+}
+
+function filterCat(id, el) {
+  selectedCat = id;
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function getMonthExpenses() {
+  return expenses.filter(e => {
+    const d = new Date(e.date);
+    return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+  });
+}
+
+function render() {
+  document.getElementById('monthLabel').textContent = MONTHS_MK[viewMonth] + ' ' + viewYear;
+
+  const monthExp = getMonthExpenses();
+  const total    = monthExp.reduce((s,e) => s + e.amount, 0);
+  const days     = new Date(viewYear, viewMonth+1, 0).getDate();
+  const activeRem = reminders.filter(r => !r.done).length;
+
+  document.getElementById('totalBalance').textContent = fmtMKD(total);
+  document.getElementById('totalCount').textContent   = monthExp.length;
+  document.getElementById('avgPerDay').textContent    = fmtMKD(total / days);
+  document.getElementById('reminderCount').textContent = activeRem;
+
+  renderCatSummary(monthExp);
+  renderExpenseList(monthExp);
+}
+
+function renderCatSummary(monthExp) {
+  const el = document.getElementById('catSummary');
+  const total = monthExp.reduce((s,e) => s + e.amount, 0);
+
+  el.innerHTML = CATS.map(c => {
+    const items  = monthExp.filter(e => e.category === c.id);
+    const sum    = items.reduce((s,e) => s + e.amount, 0);
+    if (sum === 0) return '';
+    return `
+      <div class="cat-sum-card" style="border-left-color:${c.color}" onclick="filterCat('${c.id}', document.querySelector('[data-cat=\\'${c.id}\\']'))">
+        <div class="cat-sum-emoji">${c.emoji}</div>
+        <div class="cat-sum-name">${c.name}</div>
+        <div class="cat-sum-amt" style="color:${c.color}">${fmtMKD(sum)}</div>
+        <div class="cat-sum-count">${items.length} трансакции</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderExpenseList(monthExp) {
+  const el = document.getElementById('expenseList');
+  let filtered = selectedCat === 'all' ? monthExp : monthExp.filter(e => e.category === selectedCat);
+  filtered = [...filtered].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  if (filtered.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">💸</div>
+      <div class="empty-state-text">Нема трошоци</div>
+      <div class="empty-state-sub">Додај го твојот прв трошок со копчето подолу</div>
+    </div>`;
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  filtered.forEach(e => {
+    const dk = new Date(e.date).toDateString();
+    if (!groups[dk]) groups[dk] = [];
+    groups[dk].push(e);
+  });
+
+  el.innerHTML = Object.entries(groups).map(([dk, items]) => {
+    const d = new Date(dk);
+    const dayLabel = d.toLocaleDateString('mk-MK', { weekday:'short', day:'numeric', month:'short' });
+    const dayTotal = items.reduce((s,e) => s + e.amount, 0);
+
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px">
+        <span style="font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:1px">${dayLabel}</span>
+        <span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text2)">${fmtMKD(dayTotal)}</span>
+      </div>
+      ${items.map(e => buildExpenseItem(e)).join('')}
+    `;
+  }).join('');
+}
+
+function buildExpenseItem(e) {
+  const cat = CATS.find(c => c.id === e.category) || CATS[7];
+  return `
+    <div class="expense-item" style="--item-color:${cat.color}">
+      <style>.expense-item[data-id="${e.id}"]::before{background:${cat.color}}</style>
+      <div class="expense-item" data-id="${e.id}" style="display:contents"></div>
+      <div class="expense-icon" style="background:${cat.color}22">${cat.emoji}</div>
+      <div class="expense-info">
+        <div class="expense-desc">${e.description || cat.name}</div>
+        <div class="expense-meta">${cat.name}</div>
+      </div>
+      <div class="expense-right">
+        <div class="expense-amount" style="color:${cat.color}">${fmtMKD(e.amount)}</div>
+        <div class="expense-delete" onclick="deleteExpense('${e.id}')">✕</div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════
+// REMINDERS
+// ═══════════════════════════════════════
+function renderReminders() {
+  const active = reminders.filter(r => !r.done);
+  const done   = reminders.filter(r => r.done);
+
+  document.getElementById('reminderListActive').innerHTML = active.length
+    ? active.map(r => buildReminderItem(r)).join('')
+    : `<div class="empty-state" style="padding:24px">
+        <div class="empty-state-icon">🔔</div>
+        <div class="empty-state-text">Нема потсетници</div>
+       </div>`;
+
+  document.getElementById('reminderListDone').innerHTML = done.length
+    ? done.map(r => buildReminderItem(r)).join('')
+    : `<div style="color:var(--text3);font-size:13px;padding:8px 0">Нема завршени</div>`;
+}
+
+function buildReminderItem(r) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let dateTag = '';
+  if (r.date) {
+    const rd = new Date(r.date); rd.setHours(0,0,0,0);
+    const diff = (rd - today) / 86400000;
+    let cls = '';
+    let lbl = rd.toLocaleDateString('mk-MK', { day:'2-digit', month:'2-digit', year:'numeric' });
+    if (diff < 0)  { cls = 'overdue'; lbl = '⚠ ' + lbl; }
+    else if (diff === 0) { cls = 'today'; lbl = '📅 Денес'; }
+    dateTag = `<div class="reminder-date-tag ${cls}">${lbl}</div>`;
+  }
+
+  const repeatLabels = { none:'', weekly:'🔁 Неделно', monthly:'🔁 Месечно', yearly:'🔁 Годишно' };
+  const repeatTag = r.repeat && r.repeat !== 'none'
+    ? `<div class="reminder-repeat-tag">${repeatLabels[r.repeat]}</div>` : '';
+
+  return `
+    <div class="reminder-item">
+      <div class="reminder-check ${r.done ? 'done' : ''}" onclick="toggleReminder('${r.id}')">
+        ${r.done ? '✓' : ''}
+      </div>
+      <div class="reminder-info">
+        <div class="reminder-text ${r.done ? 'done-text' : ''}">${r.text}</div>
+        <div class="reminder-tags">${dateTag}${repeatTag}</div>
+      </div>
+      <div class="reminder-delete" onclick="deleteReminder('${r.id}')">✕</div>
+    </div>
+  `;
+}
+
+function toggleReminder(id) {
+  const r = reminders.find(r => r.id === id);
+  if (!r) return;
+  r.done = !r.done;
+  saveReminders();
+  renderReminders();
+  updateHeader();
+}
+
+function deleteReminder(id) {
+  reminders = reminders.filter(r => r.id !== id);
+  saveReminders();
+  renderReminders();
+  updateHeader();
+  toast('🗑 Потсетникот е избришан');
+}
+
+function checkReminders() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = reminders.filter(r => {
+    if (r.done || !r.date) return false;
+    const rd = new Date(r.date); rd.setHours(0,0,0,0);
+    return rd <= today;
+  });
+  if (due.length > 0) {
+    setTimeout(() => toast(`🔔 Имаш ${due.length} потсетник${due.length > 1 ? 'и' : ''} за денес!`), 1000);
+  }
+}
+
+// ═══════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════
+function renderStats() {
+  const now = new Date();
+  const thisY = now.getFullYear(), thisM = now.getMonth();
+  const prevM = thisM === 0 ? 11 : thisM - 1;
+  const prevY = thisM === 0 ? thisY - 1 : thisY;
+
+  const thisMonthExp = expenses.filter(e => {
+    const d = new Date(e.date);
+    return d.getFullYear() === thisY && d.getMonth() === thisM;
+  });
+  const prevMonthExp = expenses.filter(e => {
+    const d = new Date(e.date);
+    return d.getFullYear() === prevY && d.getMonth() === prevM;
+  });
+
+  const thisTotal = thisMonthExp.reduce((s,e) => s + e.amount, 0);
+  const prevTotal = prevMonthExp.reduce((s,e) => s + e.amount, 0);
+  const diff = thisTotal - prevTotal;
+  const diffColor = diff > 0 ? 'var(--red)' : 'var(--green)';
+  const diffSign  = diff > 0 ? '+' : '';
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stats-mini-card">
+      <div class="stats-mini-label">Овој месец</div>
+      <div class="stats-mini-val" style="color:var(--accent)">${fmtMKD(thisTotal)}</div>
+    </div>
+    <div class="stats-mini-card">
+      <div class="stats-mini-label">Минат месец</div>
+      <div class="stats-mini-val" style="color:var(--teal)">${fmtMKD(prevTotal)}</div>
+    </div>
+    <div class="stats-mini-card">
+      <div class="stats-mini-label">Разлика</div>
+      <div class="stats-mini-val" style="color:${diffColor}">${diffSign}${fmtMKD(diff)}</div>
+    </div>
+    <div class="stats-mini-card">
+      <div class="stats-mini-label">Тр. овој месец</div>
+      <div class="stats-mini-val" style="color:var(--yellow)">${thisMonthExp.length}</div>
+    </div>
+  `;
+
+  // Bars
+  const barsEl = document.getElementById('statsBars');
+  const catTotals = CATS.map(c => ({
+    ...c,
+    total: thisMonthExp.filter(e => e.category === c.id).reduce((s,e) => s + e.amount, 0)
+  })).filter(c => c.total > 0).sort((a,b) => b.total - a.total);
+
+  const maxTotal = catTotals[0]?.total || 1;
+
+  barsEl.innerHTML = catTotals.map(c => `
+    <div class="stats-bar-item">
+      <div class="stats-bar-head">
+        <div class="stats-bar-name">${c.emoji} ${c.name}</div>
+        <div class="stats-bar-amt">${fmtMKD(c.total)}</div>
+      </div>
+      <div class="stats-bar-track">
+        <div class="stats-bar-fill" style="width:${(c.total/maxTotal*100).toFixed(1)}%;background:${c.color}"></div>
+      </div>
+    </div>
+  `).join('') || '<div style="color:var(--text2);font-size:13px">Нема трошоци овој месец</div>';
+
+  // Last 6 months
+  const monthsEl = document.getElementById('statsMonths');
+  const last6 = [];
+  for (let i = 5; i >= 0; i--) {
+    let m = thisM - i, y = thisY;
+    if (m < 0) { m += 12; y--; }
+    const total = expenses
+      .filter(e => { const d = new Date(e.date); return d.getFullYear()===y && d.getMonth()===m; })
+      .reduce((s,e) => s + e.amount, 0);
+    last6.push({ label: MONTHS_MK[m].slice(0,3), total });
+  }
+
+  const maxM = Math.max(...last6.map(m => m.total)) || 1;
+  monthsEl.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:flex-end;height:80px;margin-bottom:8px">
+      ${last6.map(m => {
+        const h = Math.max((m.total / maxM * 100), 4);
+        const isThis = m === last6[5];
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="flex:1;width:100%;border-radius:4px 4px 0 0;background:${isThis ? 'var(--accent)' : 'var(--card2)'};height:${h}%;min-height:4px;transition:height 0.6s ease"></div>
+          <div style="font-size:10px;color:var(--text2);font-weight:600">${m.label}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:8px">
+      ${last6.map(m => `<div style="flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">${fmtShort(m.total)}</div>`).join('')}
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function openModal() {
+  modalMode = currentTab === 'reminders' ? 'reminder' : 'expense';
+  document.getElementById('modalTitle').textContent  = modalMode === 'expense' ? 'Нов трошок' : 'Нов потсетник';
+  document.getElementById('expenseForm').style.display  = modalMode === 'expense'  ? '' : 'none';
+  document.getElementById('reminderForm').style.display = modalMode === 'reminder' ? '' : 'none';
+  document.getElementById('modalOverlay').classList.add('show');
+
+  if (modalMode === 'expense') {
+    document.getElementById('expDesc').focus();
+  } else {
+    document.getElementById('remText').focus();
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  clearForm();
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function clearForm() {
+  document.getElementById('expDesc').value   = '';
+  document.getElementById('expAmount').value = '';
+  document.getElementById('expDate').value   = new Date().toISOString().split('T')[0];
+  document.getElementById('remText').value   = '';
+  document.getElementById('remDate').value   = new Date().toISOString().split('T')[0];
+  selectedCatId = CATS[0].id;
+  selectedRepeat = 'none';
+  buildCatPicker();
+  document.querySelectorAll('.repeat-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.val === 'none');
+  });
+}
+
+// ═══════════════════════════════════════
+// CATEGORY PICKER
+// ═══════════════════════════════════════
+function buildCatPicker() {
+  document.getElementById('catPicker').innerHTML = CATS.map(c => `
+    <div class="cat-pick-btn ${c.id === selectedCatId ? 'selected' : ''}"
+         onclick="selectCat('${c.id}', this)">
+      <div class="cat-pick-emoji">${c.emoji}</div>
+      <div class="cat-pick-name">${c.name}</div>
+    </div>
+  `).join('');
+}
+
+function selectCat(id, el) {
+  selectedCatId = id;
+  document.querySelectorAll('.cat-pick-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectRepeat(el) {
+  selectedRepeat = el.dataset.val;
+  document.querySelectorAll('.repeat-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ═══════════════════════════════════════
+// SAVE ENTRY
+// ═══════════════════════════════════════
+function saveEntry() {
+  if (modalMode === 'expense') {
+    const amount = parseFloat(document.getElementById('expAmount').value);
+    const desc   = document.getElementById('expDesc').value.trim();
+    const date   = document.getElementById('expDate').value;
+
+    if (!amount || amount <= 0) { toast('⚠ Внеси сума'); return; }
+    if (!date) { toast('⚠ Избери датум'); return; }
+
+    const entry = {
+      id: Date.now().toString(),
+      category: selectedCatId,
+      description: desc || CATS.find(c => c.id === selectedCatId)?.name,
+      amount,
+      date: new Date(date),
+    };
+
+    expenses.push(entry);
+    saveExpenses();
+    render();
+    closeModal();
+    toast('✅ Трошокот е зачуван');
+
+  } else {
+    const text = document.getElementById('remText').value.trim();
+    const date = document.getElementById('remDate').value;
+
+    if (!text) { toast('⚠ Внеси потсетник'); return; }
+
+    const entry = {
+      id: Date.now().toString(),
+      text,
+      date: date ? new Date(date) : null,
+      repeat: selectedRepeat,
+      done: false,
+    };
+
+    reminders.push(entry);
+    saveReminders();
+    renderReminders();
+    updateHeader();
+    closeModal();
+    toast('✅ Потсетникот е зачуван');
+    // Schedule notification
+    scheduleNotification(entry);
+  }
+}
+
+// ═══════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════
+function deleteExpense(id) {
+  expenses = expenses.filter(e => e.id !== id);
+  saveExpenses();
+  render();
+  toast('🗑 Трошокот е избришан');
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function updateHeader() {
+  const activeRem = reminders.filter(r => !r.done).length;
+  document.getElementById('reminderCount').textContent = activeRem;
+}
+
+function fmtMKD(n) {
+  return new Intl.NumberFormat('mk-MK', { minimumFractionDigits:2, maximumFractionDigits:2 }).format(n || 0);
+}
+
+function fmtShort(n) {
+  if (n >= 1000) return (n/1000).toFixed(1) + 'k';
+  return Math.round(n).toString();
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════
+
+// Register inline Service Worker for background notifications
+const SW_CODE = `
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SCHEDULE') {
+    const { id, title, body, timestamp } = e.data;
+    const delay = timestamp - Date.now();
+    if (delay <= 0) return;
+    setTimeout(() => {
+      self.registration.showNotification(title, {
+        body,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="%237c6af7"/><text y="44" x="10" font-size="40">🔔</text></svg>',
+        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="%237c6af7"/></svg>',
+        tag: id,
+        requireInteraction: true,
+        data: { id }
+      });
+    }, delay);
+  }
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.matchAll({ type: 'window' }).then(cs => {
+    if (cs.length) cs[0].focus();
+    else self.clients.openWindow('/');
+  }));
+});
+`;
+
+let swRegistration = null;
+
+async function initServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const blob = new Blob([SW_CODE], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    swRegistration = await navigator.serviceWorker.register(swUrl, { scope: '/' });
+    console.log('SW registered');
+  } catch (err) {
+    // Blob SW may be blocked in some browsers — silently fail
+    console.warn('SW not available:', err.message);
+  }
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) {
+    toast('⚠ Твојот browser не поддржува нотификации');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    document.getElementById('notifBanner').style.display = 'none';
+    localStorage.setItem('mt_notif', 'granted');
+    toast('✅ Нотификациите се овозможени!');
+    await initServiceWorker();
+    // Schedule all existing active reminders
+    reminders.filter(r => !r.done && r.date).forEach(scheduleNotification);
+  } else {
+    toast('❌ Нотификациите се одбиени');
+  }
+}
+
+function scheduleNotification(r) {
+  if (!r.date || !swRegistration) return;
+  if (Notification.permission !== 'granted') return;
+
+  const target = new Date(r.date);
+  target.setHours(9, 0, 0, 0); // 09:00 on the reminder day
+
+  if (target <= new Date()) return; // already past
+
+  try {
+    navigator.serviceWorker.ready.then(sw => {
+      sw.active?.postMessage({
+        type: 'SCHEDULE',
+        id: r.id,
+        title: '🔔 Потсетник — Мои Трошоци',
+        body: r.text,
+        timestamp: target.getTime(),
+      });
+    });
+  } catch(e) {
+    // Fallback: use setTimeout for same-session reminders
+    const delay = target.getTime() - Date.now();
+    if (delay > 0 && delay < 86400000 * 2) { // only schedule if within 2 days
+      setTimeout(() => {
+        new Notification('🔔 Потсетник — Мои Трошоци', {
+          body: r.text,
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="%237c6af7"/><text y="44" x="10" font-size="40">🔔</text></svg>',
+        });
+      }, delay);
+    }
+  }
+}
+
+function checkAndShowNotifBanner() {
+  if (!('Notification' in window)) return;
+  const saved = localStorage.getItem('mt_notif');
+  if (Notification.permission === 'default' && saved !== 'granted') {
+    document.getElementById('notifBanner').style.display = 'flex';
+  }
+}
+
+// Init on load
+(async () => {
+  if (Notification.permission === 'granted') {
+    await initServiceWorker();
+  }
+})();
+
+// ═══════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+// ═══════════════════════════════════════
+// PWA MANIFEST (injected dynamically)
+// ═══════════════════════════════════════
+(function injectManifest() {
+  const manifest = {
+    name: "Мои Трошоци",
+    short_name: "Трошоци",
+    description: "Следење на лични финансиски трошоци и потсетници",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#0d0d14",
+    theme_color: "#7c6af7",
+    orientation: "portrait-primary",
+    lang: "mk",
+    categories: ["finance", "productivity"],
+    icons: [
+      {
+        src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%230d0d14'/><rect x='32' y='32' width='448' height='448' rx='90' fill='%237c6af7'/><text y='360' x='80' font-size='320' font-family='serif'>💸</text></svg>`),
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "any"
+      },
+      {
+        src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%237c6af7'/><text y='360' x='80' font-size='320' font-family='serif'>💸</text></svg>`),
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "maskable"
+      }
+    ],
+    shortcuts: [
+      {
+        name: "Нов трошок",
+        short_name: "Трошок",
+        description: "Додај нов трошок",
+        url: "./"
+      }
+    ]
+  };
+
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const url  = URL.createObjectURL(blob);
+  const link = document.getElementById('pwaManifest');
+  if (link) link.href = url;
+})();
+
+// ═══════════════════════════════════════
+// SERVICE WORKER (offline cache)
+// ═══════════════════════════════════════
+(function registerOfflineSW() {
+  if (!('serviceWorker' in navigator)) return;
+
+  const SW_OFFLINE = `
+const CACHE = 'moi-trosoci-v1';
+const FONTS = [
+  'https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(FONTS).catch(()=>{}))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(clients.claim());
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => new Response('', { status: 503 })))
+  );
+});
+
+// Scheduled notifications
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SCHEDULE') {
+    const { id, title, body, timestamp } = e.data;
+    const delay = timestamp - Date.now();
+    if (delay > 0) {
+      setTimeout(() => {
+        self.registration.showNotification(title, {
+          body,
+          icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230d0d14'/%3E%3Crect x='32' y='32' width='448' height='448' rx='90' fill='%237c6af7'/%3E%3Ctext y='360' x='80' font-size='320'%3E%F0%9F%92%B8%3C/text%3E%3C/svg%3E",
+          badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='20' fill='%237c6af7'/%3E%3C/svg%3E",
+          tag: id,
+          requireInteraction: true,
+          vibrate: [200, 100, 200]
+        });
+      }, delay);
+    }
+  }
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    if (cs.length > 0) return cs[0].focus();
+    return self.clients.openWindow('./');
+  }));
+});
+`;
+
+  try {
+    const blob = new Blob([SW_OFFLINE], { type: 'application/javascript' });
+    const url  = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url, { scope: './' })
+      .then(reg => {
+        swRegistration = reg;
+        console.log('✅ Service Worker registered for offline + notifications');
+      })
+      .catch(err => console.warn('SW registration failed:', err));
+  } catch(e) {
+    console.warn('SW blob failed:', e);
+  }
+})();
+
+</script>
+</body>
+</html>
